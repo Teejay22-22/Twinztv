@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>LocalHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { font-family: system-ui; margin: 0; padding: 20px; background: #0f172a; color: white; }
+    .status { padding: 10px; border-radius: 8px; margin-bottom: 15px; }
+    .online { background: #16a34a; }
+    .offline { background: #dc2626; }
+    .card { background: #1e293b; padding: 15px; margin: 10px 0; border-radius: 12px; }
+    button { padding: 10px 15px; border: none; border-radius: 8px; background: #3b82f6; color: white; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div id="status" class="status">Checking connection...</div>
+  <h1>LocalHub 🎵🎬🎮</h1>
+  
+  <div class="card">
+    <h3>Music</h3>
+    <p>Plays cached tracks when offline</p>
+    <button onclick="playMusic()">Play Offline Track</button>
+  </div>
+  
+  <div class="card">
+    <h3>AI Pick For You</h3>
+    <p id="ai-suggestion">Loading suggestion...</p>
+  </div>
+
+  <script>
+    // Check online/offline status
+    function updateStatus() {
+      const el = document.getElementById('status');
+      if (navigator.onLine) {
+        el.className = 'status online';
+        el.textContent = 'Online - Syncing with server';
+      } else {
+        el.className = 'status offline';
+        el.textContent = 'Offline - Running on local cache';
+      }
+    }
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+    updateStatus();
+
+    // Register service worker for offline support
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    // Simple local AI stub - replace with Transformers.js or WebLLM
+    function getAISuggestion() {
+      const offlinePicks = [
+        "Try 'Chill Beats Vol 2' - you listened to similar last week",
+        "Resume 'Space Quest' game from level 3",
+        "Watch 'Tutorial: Node Basics' - 8 min left"
+      ];
+      document.getElementById('ai-suggestion').textContent = 
+        offlinePicks[Math.floor(Math.random() * offlinePicks.length)];
+    }
+    getAISuggestion();
+
+    function playMusic() {
+      alert('Playing cached track. Replace this with your <audio> player using IndexedDB files.');
+    }
+  </script>
+</body>
+</html>

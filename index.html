@@ -11,22 +11,69 @@
     .online { background: #16a34a; }
     .offline { background: #dc2626; }
     .card { background: #1e293b; padding: 15px; margin: 10px 0; border-radius: 12px; }
-    button { padding: 10px 15px; border: none; border-radius: 8px; background: #3b82f6; color: white; cursor: pointer; }
+    button { padding: 10px 15px; border: none; border-radius: 8px; background: #3b82f6; color: white; cursor: pointer; margin: 5px; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+    .btn-secondary { background: #475569; }
+    .btn-danger { background: #dc2626; }
+    input[type="search"] { padding: 10px; border-radius: 8px; border: none; background: #1e293b; color: white; width: 100%; max-width: 300px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 10px; }
+    .item { background: #334155; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; }
+    .item:hover { background: #475569; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div id="status" class="status">Checking connection...</div>
   <h1>LocalHub 🎵🎬🎮</h1>
   
-  <div class="card">
-    <h3>Music</h3>
-    <p>Plays cached tracks when offline</p>
-    <button onclick="playMusic()">Play Offline Track</button>
+  <input type="search" id="searchBox" placeholder="Search offline content..." onkeyup="searchContent()">
+
+  <div class="btn-group">
+    <button onclick="showSection('all')">🏠 All</button>
+    <button class="btn-secondary" onclick="showSection('now')">▶️ Now Watching</button>
+    <button class="btn-secondary" onclick="showSection('favorites')">❤️ Favorites</button>
+    <button class="btn-secondary" onclick="showSection('later')">⏰ Watch Later</button>
   </div>
-  
+
+  <!-- Music Section -->
+  <div class="card" id="music-section">
+    <h3>🎵 Offline Music</h3>
+    <p>Cached tracks available without internet</p>
+    <div class="grid" id="music-grid">
+      <div class="item" onclick="playTrack('Chill Beats Vol 2')">Chill Beats Vol 2</div>
+      <div class="item" onclick="playTrack('Lo-Fi Study Mix')">Lo-Fi Study Mix</div>
+      <div class="item" onclick="playTrack('Afrobeat Essentials')">Afrobeat Essentials</div>
+    </div>
+    <button onclick="playMusic()">▶️ Play Random Track</button>
+  </div>
+
+  <!-- Movies Section -->
+  <div class="card" id="movies-section">
+    <h3>🎬 Offline Movies</h3>
+    <p>Downloaded movies ready to watch</p>
+    <div class="grid" id="movies-grid">
+      <div class="item" onclick="watchMovie('Tutorial: Node Basics')">Node Basics - 8 min left</div>
+      <div class="item" onclick="watchMovie('Space Documentary')">Space Documentary</div>
+      <div class="item" onclick="watchMovie('Comedy Special')">Comedy Special</div>
+    </div>
+  </div>
+
+  <!-- Games Section -->
+  <div class="card" id="games-section">
+    <h3>🎮 Offline Games</h3>
+    <p>Progress saved locally</p>
+    <div class="grid" id="games-grid">
+      <div class="item" onclick="playGame('Space Quest')">Space Quest - Level 3</div>
+      <div class="item" onclick="playGame('2048')">2048</div>
+      <div class="item" onclick="playGame('Snake')">Snake</div>
+    </div>
+  </div>
+
+  <!-- AI Section -->
   <div class="card">
-    <h3>AI Pick For You</h3>
+    <h3>🤖 AI Pick For You</h3>
     <p id="ai-suggestion">Loading suggestion...</p>
+    <button class="btn-danger" onclick="getAISuggestion()">New Pick</button>
   </div>
 
   <script>
@@ -45,26 +92,58 @@
     window.addEventListener('offline', updateStatus);
     updateStatus();
 
-    // Register service worker for offline support
+    // Register service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
     }
 
-    // Simple local AI stub - replace with Transformers.js or WebLLM
+    // Section navigation
+    function showSection(type) {
+      document.getElementById('music-section').classList.remove('hidden');
+      document.getElementById('movies-section').classList.remove('hidden');
+      document.getElementById('games-section').classList.remove('hidden');
+      
+      if(type === 'now') alert('Now Watching: Tutorial: Node Basics - 8 min left');
+      if(type === 'favorites') alert('Favorites: Chill Beats Vol 2, Space Quest');
+      if(type === 'later') alert('Watch Later: Comedy Special, Space Documentary');
+    }
+
+    // Search function
+    function searchContent() {
+      const query = document.getElementById('searchBox').value.toLowerCase();
+      const items = document.querySelectorAll('.item');
+      items.forEach(item => {
+        item.style.display = item.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+      });
+    }
+
+    // Media functions - replace with real IndexedDB player
+    function playMusic() {
+      const tracks = ['Chill Beats Vol 2', 'Lo-Fi Study Mix', 'Afrobeat Essentials'];
+      playTrack(tracks[Math.floor(Math.random() * tracks.length)]);
+    }
+    function playTrack(name) {
+      alert('🎵 Playing cached: ' + name + '\nConnect <audio> tag + IndexedDB here');
+    }
+    function watchMovie(name) {
+      alert('🎬 Playing: ' + name + '\nConnect <video> tag + IndexedDB here');
+    }
+    function playGame(name) {
+      alert('🎮 Loading game: ' + name + '\nLoad from cache/localStorage here');
+    }
+
+    // AI stub
     function getAISuggestion() {
       const offlinePicks = [
         "Try 'Chill Beats Vol 2' - you listened to similar last week",
         "Resume 'Space Quest' game from level 3",
-        "Watch 'Tutorial: Node Basics' - 8 min left"
+        "Watch 'Tutorial: Node Basics' - 8 min left",
+        "Afrobeat Essentials matches your vibe today"
       ];
       document.getElementById('ai-suggestion').textContent = 
         offlinePicks[Math.floor(Math.random() * offlinePicks.length)];
     }
     getAISuggestion();
-
-    function playMusic() {
-      alert('Playing cached track. Replace this with your <audio> player using IndexedDB files.');
-    }
   </script>
 </body>
 </html>

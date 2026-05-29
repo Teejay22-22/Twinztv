@@ -4,288 +4,182 @@
   <meta charset="UTF-8">
   <title>LocalHub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="manifest.json">
   <style>
-    body { font-family: system-ui; margin: 0; padding: 20px; background: #0f172a; color: white; padding-bottom: 140px; }
-   .status { padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-   .online { background: #16a34a; }
-   .offline { background: #dc2626; }
-   .card { background: #1e293b; padding: 15px; margin: 10px 0; border-radius: 12px; }
-    button { padding: 10px 15px; border: none; border-radius: 8px; background: #3b82f6; color: white; cursor: pointer; margin: 5px; }
-   .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
-   .btn-secondary { background: #475569; }
-   .btn-danger { background: #dc2626; }
-    input[type="search"] { padding: 10px; border-radius: 8px; border: none; background: #1e293b; color: white; width: 100%; max-width: 300px; }
-   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 10px; }
-   .item { background: #334155; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; }
-   .item:hover { background: #475569; }
-   .hidden { display: none; }
-   .tag { font-size: 12px; background: #16a34a; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
-    #player { position: fixed; bottom: 0; left: 0; right: 0; border-radius: 12px 12px 0 0; z-index: 100; }
-    input[type="file"] { margin: 10px 0; color: white; }
+    body { background: #0f172a; color: white; font-family: system-ui; padding: 20px; padding-bottom: 140px; }
+    .card { background: #1e293b; padding: 15px; margin: 10px 0; border-radius: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 10px; }
+    .item { background: #334155; padding: 12px; border-radius: 10px; cursor: pointer; text-align: left; }
+    .item:hover { background: #475569; }
+    .item-icon { font-size: 28px; margin-bottom: 5px; }
+    .item-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    .item-meta { font-size: 12px; color: #94a3b8; }
+    .hidden { display: none; }
+    #player { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; padding: 15px; border-radius: 12px 12px 0 0; z-index: 100; }
+    .btn-danger { background: #dc2626; color: white; border: none; padding: 10px 15px; border-radius: 8px; margin-top: 10px; }
+    input[type="file"] { color: white; margin: 10px 0; }
+    .tag { font-size: 11px; background: #3b82f6; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
   </style>
 </head>
 <body>
-  <div id="status" class="status">Checking connection...</div>
-  <h1>LocalHub 🎵🎬🎮</h1>
+  <h1>LocalHub 🎵🎬📺</h1>
 
-  <input type="search" id="searchBox" placeholder="Search offline content..." onkeyup="searchContent()">
-
-  <div class="btn-group">
-    <button onclick="showSection('all')">🏠 All</button>
-    <button class="btn-secondary" onclick="showSection('now')">▶️ Now Watching</button>
-    <button class="btn-secondary" onclick="showSection('favorites')">❤️ Favorites</button>
-    <button class="btn-secondary" onclick="showSection('later')">⏰ Watch Later</button>
-  </div>
-
-  <!-- Upload section -->
   <div class="card">
-    <h3>⬆️ Add Files Offline</h3>
-    <p>Upload mp3/mp4 once, plays forever offline. Only use royalty-free/public domain files.</p>
-    <input type="file" id="fileInput" accept="audio/*,video/*" multiple onchange="saveFiles(event)">
+    <h3>⬆️ Add Files</h3>
+    <p>Upload mp3/mp4. Name files like "Action Movie.mp4" or "Series S01E01.mp4" for auto tags</p>
+    <input type="file" accept="audio/*,video/*" multiple onchange="saveFiles(event)">
+    <button class="btn-danger" onclick="clearAll()">🗑️ Delete All</button>
   </div>
 
-  <!-- Music Section -->
-  <div class="card" id="music-section">
-    <h3>🎵 Offline Music <span class="tag">Royalty-Free</span></h3>
-    <p>Cached tracks - CC0 / Public Domain</p>
-
-    <div class="btn-group" style="margin-bottom: 10px;">
-      <button class="btn-secondary" onclick="showLibrary('all')">📚 Library</button>
-      <button class="btn-secondary" onclick="showLibrary('songs')">🎶 All Songs</button>
-      <button class="btn-secondary" onclick="showLibrary('playlists')">📋 Playlists</button>
-      <button class="btn-secondary" onclick="showLibrary('favorites')">❤️ Favorites</button>
-      <button class="btn-secondary" onclick="showLibrary('recent')">🕒 Recently Played</button>
-      <button class="btn-secondary" onclick="showLibrary('settings')">⚙️ Settings</button>
-    </div>
-
-    <div id="library-content">
-      <div class="grid" id="music-grid"></div>
-    </div>
-
-    <button onclick="playMusic()">▶️ Play Random Track</button>
-  </div>
-
-  <!-- Movies Section -->
-  <div class="card" id="movies-section">
-    <h3>🎬 Offline Movies & Series <span class="tag">Public Domain</span></h3>
-    <p>Free movies + series for offline viewing</p>
-
-    <div class="btn-group" style="margin-bottom: 10px;">
-      <button class="btn-secondary" onclick="showMovies('movies')">🎥 Movies</button>
-      <button class="btn-secondary" onclick="showMovies('series')">📺 Series</button>
-      <button class="btn-secondary" onclick="showMovies('tutorials')">📚 Tutorials</button>
-    </div>
-
-    <div class="grid" id="movies-grid"></div>
-  </div>
-
-  <!-- Games Section -->
-  <div class="card" id="games-section">
-    <h3>🎮 Offline Games <span class="tag">Open Source</span></h3>
-    <p>Free games - MIT/GPL licensed</p>
-    <div class="grid" id="games-grid"></div>
-  </div>
-
-  <!-- Player -->
-  <div id="player" class="card hidden">
-    <p id="player-title">Nothing playing</p>
-    <audio id="audioPlayer" controls style="width: 100%"></audio>
-    <video id="videoPlayer" controls style="width: 100%; max-height: 300px" class="hidden"></video>
-    <button class="btn-danger" onclick="closePlayer()">Close Player</button>
-  </div>
-
-  <!-- AI Section -->
   <div class="card">
-    <h3>🤖 AI Pick For You</h3>
-    <p id="ai-suggestion">Loading suggestion...</p>
-    <button class="btn-danger" onclick="getAISuggestion()">New Pick</button>
+    <h3>🎵 Music</h3>
+    <div class="grid" id="music-grid">Loading...</div>
+  </div>
+
+  <div class="card">
+    <h3>🎬 Movies</h3>
+    <div class="grid" id="movies-grid">Loading...</div>
+  </div>
+
+  <div class="card">
+    <h3>📺 Series</h3>
+    <div class="grid" id="series-grid">Loading...</div>
+  </div>
+
+  <div id="player" class="hidden">
+    <p id="title"></p>
+    <audio id="audio" controls style="width:100%"></audio>
+    <video id="video" controls style="width:100%;max-height:300px" class="hidden"></video>
+    <button class="btn-danger" onclick="closePlayer()">Close</button>
   </div>
 
   <script>
     let db;
-
-    // Init IndexedDB
-    const request = indexedDB.open('LocalHubDB', 1);
-    request.onupgradeneeded = e => {
-      db = e.target.result;
-      db.createObjectStore('media', { keyPath: 'id' });
+    indexedDB.open('LocalHubDB', 1).onupgradeneeded = e => {
+      e.target.result.createObjectStore('media', { keyPath: 'id' });
     };
-    request.onsuccess = e => {
+    indexedDB.open('LocalHubDB', 1).onsuccess = e => {
       db = e.target.result;
-      showLibrary('all');
-      showMovies('movies');
-      loadGames();
+      loadFiles();
     };
 
-    // Save uploaded files
     function saveFiles(e) {
-      const files = e.target.files;
       const tx = db.transaction('media', 'readwrite');
-      const store = tx.objectStore('media');
-
-      for(let file of files) {
-        const item = {
+      for(let file of e.target.files) {
+        tx.objectStore('media').add({
           id: file.name + Date.now(),
           name: file.name,
-          type: file.type.startsWith('audio')? 'audio' : 'video',
+          type: file.type.startsWith('audio') ? 'audio' : 'video',
           blob: file
-        };
-        store.add(item);
+        });
+      }
+      tx.oncomplete = () => { alert('Saved!'); loadFiles(); }
+    }
+
+    // Classify video: movie vs series + genre from filename
+    function classifyVideo(name) {
+      const n = name.toLowerCase();
+      let kind = 'movie';
+      let genre = 'General';
+
+      // Detect series: S01E01, Ep1, Episode 2, Season 1
+      if(/s\d+e\d+|ep\d+|episode|season/.test(n)) {
+        kind = 'series';
       }
 
-      tx.oncomplete = () => {
-        alert('Saved offline! Refresh lists to see them.');
-        showLibrary('all');
-        showMovies('movies');
+      // Detect genre from keywords in filename
+      if(n.includes('action') || n.includes('fight')) genre = 'Action';
+      else if(n.includes('comedy') || n.includes('funny')) genre = 'Comedy';
+      else if(n.includes('horror') || n.includes('scary') || n.includes('dead')) genre = 'Horror';
+      else if(n.includes('romance') || n.includes('love')) genre = 'Romance';
+      else if(n.includes('sci') || n.includes('space') || n.includes('future')) genre = 'Sci-Fi';
+      else if(n.includes('doc') || n.includes('tutorial') || n.includes('learn')) genre = 'Tutorial';
+      else if(n.includes('drama')) genre = 'Drama';
+
+      return { kind, genre };
+    }
+
+    function loadFiles() {
+      db.transaction('media').objectStore('media').getAll().onsuccess = e => {
+        const files = e.target.result;
+        const music = files.filter(f => f.type === 'audio');
+        const videos = files.filter(f => f.type === 'video');
+        
+        const movies = videos.filter(v => classifyVideo(v.name).kind === 'movie');
+        const series = videos.filter(v => classifyVideo(v.name).kind === 'series');
+
+        // Music grid with 🎵 icon
+        document.getElementById('music-grid').innerHTML = music.length
+         ? music.map(m => `
+            <div class="item" onclick="play('${m.name}','audio')">
+              <div class="item-icon">🎵</div>
+              <div class="item-name">${m.name}</div>
+              <div class="item-meta">Audio file</div>
+            </div>`).join('')
+          : 'No music uploaded yet';
+
+        // Movies grid with 🎬 + genre tag
+        document.getElementById('movies-grid').innerHTML = movies.length
+         ? movies.map(v => {
+            const { genre } = classifyVideo(v.name);
+            return `
+            <div class="item" onclick="play('${v.name}','video')">
+              <div class="item-icon">🎬</div>
+              <div class="item-name">${v.name}</div>
+              <div class="item-meta"><span class="tag">${genre}</span> Movie</div>
+            </div>`;
+           }).join('')
+          : 'No movies uploaded yet';
+
+        // Series grid with 📺 + genre tag
+        document.getElementById('series-grid').innerHTML = series.length
+         ? series.map(v => {
+            const { genre } = classifyVideo(v.name);
+            return `
+            <div class="item" onclick="play('${v.name}','video')">
+              <div class="item-icon">📺</div>
+              <div class="item-name">${v.name}</div>
+              <div class="item-meta"><span class="tag">${genre}</span> Series</div>
+            </div>`;
+           }).join('')
+          : 'No series uploaded yet';
       };
     }
 
-    // Online status
-    function updateStatus() {
-      const el = document.getElementById('status');
-      el.className = 'status ' + (navigator.onLine? 'online' : 'offline');
-      el.textContent = navigator.onLine? 'Online - Syncing' : 'Offline - LocalHub working';
-    }
-    window.addEventListener('online', updateStatus);
-    window.addEventListener('offline', updateStatus);
-    updateStatus();
+    function play(name, type) {
+      db.transaction('media').objectStore('media').getAll().onsuccess = e => {
+        const file = e.target.result.find(f => f.name === name);
+        if(!file) return alert('File not found');
 
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-
-    // Non-copyright content database - now uses DB first
-    const libraryData = {
-      music: {
-        all: ['Night Owl - Broke For Free', 'Sunday - Purrple Cat', 'Lofi Study - FASSounds'],
-        playlists: ['Chill Lo-Fi - 15 tracks', 'Study Focus - 10 tracks'],
-        favorites: ['Night Owl - Broke For Free'],
-        recent: ['Lofi Study - 5 min ago']
-      },
-      movies: {
-        movies: ['Night of the Living Dead 1968', 'His Girl Friday 1940'],
-        series: ['Public Domain Sci-Fi Ep 1', 'Classic Detective Ep 3'],
-        tutorials: ['JS Basics - FreeCodeCamp']
-      },
-      games: ['2048 - MIT', 'Snake Game - GPL', 'Tetris Clone - Open']
-    };
-
-    // Library navigation - loads from DB + fallback
-    function showLibrary(type) {
-      const content = document.getElementById('library-content');
-      if(type === 'settings') {
-        content.innerHTML = `<div class="card" style="margin: 0;">
-          <h4>⚙️ Music Settings</h4>
-          <p>Audio Quality: High</p>
-          <p>Source: Your uploads + Free Music Archive</p>
-          <button class="btn-danger" onclick="clearCache()">Clear All Cache</button>
-        </div>`;
-        return;
-      }
-
-      const tx = db.transaction('media', 'readonly');
-      const store = tx.objectStore('media');
-      store.getAll().onsuccess = e => {
-        const dbItems = e.target.result.filter(i => i.type === 'audio').map(i => i.name);
-        const items = dbItems.length > 0? dbItems : libraryData.music[type] || libraryData.music.all;
-        content.innerHTML = `<div class="grid" id="music-grid">
-          ${items.map(item => `<div class="item" onclick="playTrack('${item}')">${item}</div>`).join('')}
-        </div>`;
-      };
-    }
-
-    // Movies/Series navigation
-    function showMovies(type) {
-      const grid = document.getElementById('movies-grid');
-      const tx = db.transaction('media', 'readonly');
-      const store = tx.objectStore('media');
-      store.getAll().onsuccess = e => {
-        const dbItems = e.target.result.filter(i => i.type === 'video').map(i => i.name);
-        const items = dbItems.length > 0? dbItems : libraryData.movies[type];
-        grid.innerHTML = items.map(item => `<div class="item" onclick="watchMovie('${item}')">${item}</div>`).join('');
-      };
-    }
-
-    function loadGames() {
-      const grid = document.getElementById('games-grid');
-      grid.innerHTML = libraryData.games.map(game => `<div class="item" onclick="playGame('${game}')">${game}</div>`).join('');
-    }
-
-    // Play from IndexedDB
-    function playTrack(name) {
-      playMedia(name, 'audio');
-    }
-    function watchMovie(name) {
-      playMedia(name, 'video');
-    }
-
-    function playMedia(name, type) {
-      const tx = db.transaction('media', 'readonly');
-      const store = tx.objectStore('media');
-      store.getAll().onsuccess = e => {
-        const item = e.target.result.find(i => i.name === name && i.type === type);
-        if(!item) {
-          alert('File not uploaded yet. Use "Add Files Offline" above first.');
-          return;
-        }
-        const url = URL.createObjectURL(item.blob);
-        const audio = document.getElementById('audioPlayer');
-        const video = document.getElementById('videoPlayer');
-        const player = document.getElementById('player');
-        const title = document.getElementById('player-title');
+        const url = URL.createObjectURL(file.blob);
+        document.getElementById('player').classList.remove('hidden');
+        document.getElementById('title').textContent = (type==='audio'?'🎵 ':'🎬 ') + name;
 
         if(type === 'audio') {
-          video.classList.add('hidden');
-          audio.classList.remove('hidden');
-          audio.src = url;
-          title.textContent = '🎵 ' + name;
-          audio.play();
+          document.getElementById('video').classList.add('hidden');
+          document.getElementById('audio').classList.remove('hidden');
+          document.getElementById('audio').src = url;
+          document.getElementById('audio').play();
         } else {
-          audio.classList.add('hidden');
-          video.classList.remove('hidden');
-          video.src = url;
-          title.textContent = '🎬 ' + name;
-          video.play();
+          document.getElementById('audio').classList.add('hidden');
+          document.getElementById('video').classList.remove('hidden');
+          document.getElementById('video').src = url;
+          document.getElementById('video').play();
         }
-        player.classList.remove('hidden');
       };
     }
 
     function closePlayer() {
       document.getElementById('player').classList.add('hidden');
-      document.getElementById('audioPlayer').pause();
-      document.getElementById('videoPlayer').pause();
+      document.getElementById('audio').pause();
+      document.getElementById('video').pause();
     }
 
-    function clearCache() {
-      if(confirm('Delete all offline files?')) {
+    function clearAll() {
+      if(confirm('Delete ALL your music + movies?')) {
         indexedDB.deleteDatabase('LocalHubDB');
         location.reload();
       }
     }
-
-    function playMusic() {
-      const items = document.querySelectorAll('#music-grid.item');
-      if(items.length > 0) items[Math.floor(Math.random()*items.length)].click();
-    }
-    function playGame(name) {
-      alert('🎮 Loading open source: ' + name);
-    }
-    function showSection(type) {
-      if(type === 'now') alert('Now Playing: Last media from player');
-      if(type === 'favorites') alert('Favorites: Mark files as favorite in future update');
-      if(type === 'later') alert('Watch Later: Feature coming');
-    }
-    function searchContent() {
-      const query = document.getElementById('searchBox').value.toLowerCase();
-      document.querySelectorAll('.item').forEach(item => {
-        item.style.display = item.textContent.toLowerCase().includes(query)? 'block' : 'none';
-      });
-    }
-    function getAISuggestion() {
-      const picks = ["Upload royalty-free mp3/mp4 above", "Try Night of the Living Dead", "Play 2048"];
-      document.getElementById('ai-suggestion').textContent = picks[Math.floor(Math.random() * picks.length)];
-    }
-    getAISuggestion();
   </script>
 </body>
 </html>

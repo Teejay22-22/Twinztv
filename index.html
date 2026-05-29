@@ -1,9 +1,46 @@
-<!-- Music Section -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>LocalHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { font-family: system-ui; margin: 0; padding: 20px; background: #0f172a; color: white; }
+   .status { padding: 10px; border-radius: 8px; margin-bottom: 15px; }
+   .online { background: #16a34a; }
+   .offline { background: #dc2626; }
+   .card { background: #1e293b; padding: 15px; margin: 10px 0; border-radius: 12px; }
+    button { padding: 10px 15px; border: none; border-radius: 8px; background: #3b82f6; color: white; cursor: pointer; margin: 5px; }
+   .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+   .btn-secondary { background: #475569; }
+   .btn-danger { background: #dc2626; }
+    input[type="search"] { padding: 10px; border-radius: 8px; border: none; background: #1e293b; color: white; width: 100%; max-width: 300px; }
+   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 10px; }
+   .item { background: #334155; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; }
+   .item:hover { background: #475569; }
+   .hidden { display: none; }
+   .tag { font-size: 12px; background: #16a34a; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
+  </style>
+</head>
+<body>
+  <div id="status" class="status">Checking connection...</div>
+  <h1>LocalHub 🎵🎬🎮</h1>
+
+  <input type="search" id="searchBox" placeholder="Search offline content..." onkeyup="searchContent()">
+
+  <div class="btn-group">
+    <button onclick="showSection('all')">🏠 All</button>
+    <button class="btn-secondary" onclick="showSection('now')">▶️ Now Watching</button>
+    <button class="btn-secondary" onclick="showSection('favorites')">❤️ Favorites</button>
+    <button class="btn-secondary" onclick="showSection('later')">⏰ Watch Later</button>
+  </div>
+
+  <!-- Music Section -->
   <div class="card" id="music-section">
-    <h3>🎵 Offline Music</h3>
-    <p>Cached tracks available without internet</p>
-    
-    <!-- Library submenu -->
+    <h3>🎵 Offline Music <span class="tag">Royalty-Free</span></h3>
+    <p>Cached tracks - CC0 / Public Domain</p>
+
     <div class="btn-group" style="margin-bottom: 10px;">
       <button class="btn-secondary" onclick="showLibrary('all')">📚 Library</button>
       <button class="btn-secondary" onclick="showLibrary('songs')">🎶 All Songs</button>
@@ -14,12 +51,154 @@
     </div>
 
     <div id="library-content">
-      <div class="grid" id="music-grid">
-        <div class="item" onclick="playTrack('Chill Beats Vol 2')">Chill Beats Vol 2</div>
-        <div class="item" onclick="playTrack('Lo-Fi Study Mix')">Lo-Fi Study Mix</div>
-        <div class="item" onclick="playTrack('Afrobeat Essentials')">Afrobeat Essentials</div>
-      </div>
+      <div class="grid" id="music-grid"></div>
     </div>
-    
+
     <button onclick="playMusic()">▶️ Play Random Track</button>
   </div>
+
+  <!-- Movies Section -->
+  <div class="card" id="movies-section">
+    <h3>🎬 Offline Movies & Series <span class="tag">Public Domain</span></h3>
+    <p>Free movies + series for offline viewing</p>
+
+    <div class="btn-group" style="margin-bottom: 10px;">
+      <button class="btn-secondary" onclick="showMovies('movies')">🎥 Movies</button>
+      <button class="btn-secondary" onclick="showMovies('series')">📺 Series</button>
+      <button class="btn-secondary" onclick="showMovies('tutorials')">📚 Tutorials</button>
+    </div>
+
+    <div class="grid" id="movies-grid"></div>
+  </div>
+
+  <!-- Games Section -->
+  <div class="card" id="games-section">
+    <h3>🎮 Offline Games <span class="tag">Open Source</span></h3>
+    <p>Free games - MIT/GPL licensed</p>
+    <div class="grid" id="games-grid"></div>
+  </div>
+
+  <!-- AI Section -->
+  <div class="card">
+    <h3>🤖 AI Pick For You</h3>
+    <p id="ai-suggestion">Loading suggestion...</p>
+    <button class="btn-danger" onclick="getAISuggestion()">New Pick</button>
+  </div>
+
+  <script>
+    // Check online/offline status
+    function updateStatus() {
+      const el = document.getElementById('status');
+      if (navigator.onLine) {
+        el.className = 'status online';
+        el.textContent = 'Online - Syncing with server';
+      } else {
+        el.className = 'status offline';
+        el.textContent = 'Offline - Running on local cache';
+      }
+    }
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+    updateStatus();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    // Non-copyright content database
+    const libraryData = {
+      music: {
+        all: ['Night Owl - Broke For Free', 'Sunday - Purrple Cat', 'Lofi Study - FASSounds', 'Dawn - Sappheiros', 'Aether - Vexento'],
+        songs: ['Track 1 - Night Owl', 'Track 2 - Sunday', 'Track 3 - Lofi Study', 'Track 4 - Dawn', 'Track 5 - Aether'],
+        playlists: ['Chill Lo-Fi - 15 tracks', 'Study Focus - 10 tracks', 'Coding Beats - 20 tracks'],
+        favorites: ['Night Owl - Broke For Free', 'Sunday - Purrple Cat'],
+        recent: ['Lofi Study - 5 min ago', 'Dawn - 1 hour ago']
+      },
+      movies: {
+        movies: ['Night of the Living Dead 1968', 'His Girl Friday 1940', 'The Little Shop of Horrors 1960', 'Charade 1963'],
+        series: ['Public Domain Sci-Fi Ep 1', 'Classic Detective Ep 3', 'Educational Series Ep 5'],
+        tutorials: ['JS Basics - FreeCodeCamp', 'Python Intro - Public', 'HTML CSS Crash Course']
+      },
+      games: ['2048 - MIT', 'Snake Game - GPL', 'Tetris Clone - Open', 'Minesweeper - Free', 'Pong - Public Domain']
+    };
+
+    // Load initial grids
+    showLibrary('all');
+    showMovies('movies');
+    loadGames();
+
+    // Library navigation
+    function showLibrary(type) {
+      const content = document.getElementById('library-content');
+      if(type === 'settings') {
+        content.innerHTML = `<div class="card" style="margin: 0;">
+          <h4>⚙️ Music Settings</h4>
+          <p>Audio Quality: High</p>
+          <p>Cache Size: 2.3GB / 5GB</p>
+          <p>Source: Free Music Archive + YouTube Audio Library</p>
+          <button class="btn-danger">Clear Cache</button>
+        </div>`;
+        return;
+      }
+      const items = libraryData.music[type] || libraryData.music.all;
+      content.innerHTML = `<div class="grid" id="music-grid">
+        ${items.map(item => `<div class="item" onclick="playTrack('${item}')">${item}</div>`).join('')}
+      </div>`;
+    }
+
+    // Movies/Series navigation
+    function showMovies(type) {
+      const grid = document.getElementById('movies-grid');
+      const items = libraryData.movies[type];
+      grid.innerHTML = items.map(item => `<div class="item" onclick="watchMovie('${item}')">${item}</div>`).join('');
+    }
+
+    // Load games
+    function loadGames() {
+      const grid = document.getElementById('games-grid');
+      grid.innerHTML = libraryData.games.map(game => `<div class="item" onclick="playGame('${game}')">${game}</div>`).join('');
+    }
+
+    function showSection(type) {
+      document.getElementById('music-section').classList.remove('hidden');
+      document.getElementById('movies-section').classList.remove('hidden');
+      document.getElementById('games-section').classList.remove('hidden');
+      if(type === 'now') alert('Now Watching: Night of the Living Dead 1968');
+      if(type === 'favorites') alert('Favorites: Night Owl, 2048 Game');
+      if(type === 'later') alert('Watch Later: Public Domain Sci-Fi Ep 1');
+    }
+
+    function searchContent() {
+      const query = document.getElementById('searchBox').value.toLowerCase();
+      document.querySelectorAll('.item').forEach(item => {
+        item.style.display = item.textContent.toLowerCase().includes(query)? 'block' : 'none';
+      });
+    }
+
+    function playMusic() {
+      const tracks = libraryData.music.all;
+      playTrack(tracks[Math.floor(Math.random() * tracks.length)]);
+    }
+    function playTrack(name) {
+      alert('🎵 Playing royalty-free: ' + name + '\nSource: Free Music Archive');
+    }
+    function watchMovie(name) {
+      alert('🎬 Playing public domain: ' + name + '\nSource: Internet Archive');
+    }
+    function playGame(name) {
+      alert('🎮 Loading open source: ' + name + '\nMIT/GPL License');
+    }
+
+    function getAISuggestion() {
+      const picks = [
+        "Try 'Night Owl' - free lo-fi beat",
+        "Watch 'Night of the Living Dead' - 1968 public domain",
+        "Play 2048 - open source puzzle",
+        "Resume 'Public Domain Sci-Fi Ep 1'"
+      ];
+      document.getElementById('ai-suggestion').textContent = picks[Math.floor(Math.random() * picks.length)];
+    }
+    getAISuggestion();
+  </script>
+</body>
+</html>
